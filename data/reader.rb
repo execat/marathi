@@ -18,7 +18,7 @@ class Reader
   private
   def remove_punctuation
     @files = @files.map do |array_of_words|
-      array_of_words.map { |w| w.gsub(/[!@#$%^&*()-=_+|;:",.<>?'{}\[\]]/, '') }
+      array_of_words.map { |w| w.gsub(/[!@#$%^&*()-=_+|;:",.<>?'`~{}\[\]]/, '') }
     end
   end
 
@@ -30,7 +30,7 @@ class Reader
 
   def keep_only_devanagari_characters
     @files = @files.map do |array_of_words|
-      array_of_words.select { |k| k =~ /\A\p{Devanagari}\z/ }
+      array_of_words.select { |k| k =~ /\A\p{Devanagari}*\z/ }
     end
   end
 end
