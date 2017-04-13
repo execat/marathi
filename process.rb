@@ -38,7 +38,11 @@ def export_to_morfessor(counts)
   end
 end
 
-puts "#{Time.now} Preparing counts"
+def logger(str)
+  puts "#{Time.now} #{str}"
+end
+
+logger "Preparing counts"
 csv = CSV.read("pickle.csv").map { |word| [word[0], word[1].to_i] } rescue []
 counts = csv.empty? ? process_data : Hash[csv]
 
@@ -59,20 +63,21 @@ def suffixes(array)
 end
 
 def prefixes(array)
-  suffixes(array.map(&:reverse).sort).map do |key, p|
-    p = p.first
-    [key.reverse, [p[0].reverse, p[1].reverse]]
-  end
+  s = suffixes(array.map(&:reverse).sort).to_h
+  s.map do |key, p|
+    [key.reverse, p.map { |element| [element.first.reverse, element.last.reverse] } ]
+  end.to_h
 end
 
 export_to_morfessor(counts) unless File.exists?(morfessor_file)
 
 # 3.1
+logger "Inducing candidate suffixes and prefixes"
 keys = counts.keys.sort
 candidate_suffixes = suffixes(keys)
 candidate_prefixes = prefixes(keys)
 
-def inverse_hash(input)
+def inverse_hash(input, options={})
   h = Hash.new([])
   i = 0
   puts "#{input.count}"
@@ -85,22 +90,41 @@ def inverse_hash(input)
 end
 
 # 3.2
+logger "Calculating affix scores"
 inverse_hash_1 = inverse_hash(candidate_suffixes)
 h1 = inverse_hash_1.map { |k, v| [k, v.count] }.to_h
 l1 = candidate_suffixes.to_h.map { |k, v| [k, v.count] }.to_h
 score_h1 = h1.map { |k, v| [k, [k.length, 5].min * v] }
   .to_h.sort_by { |_, v| v }.reverse
-score_l1 = inverse_hash_1.map { |k, v| [k, v.map { |each_v| l1[each_v] }.sum] }
+score_l1 = inverse_hash_1.map { |k, v| [k, [k.length, 5].min * v.map { |each_v| l1[each_v] }.sum] }
   .to_h.sort_by { |_, v| v }.reverse
 
-binding.pry
-
-inverse_hash_2 = inverse_hash(candidate_prefixes)
+inverse_hash_2 = inverse_hash(candidate_prefixes, { reverse: true })
 h2 = inverse_hash_2.map { |k, v| [k, v.count] }.to_h
 l2 = candidate_prefixes.to_h.map { |k, v| [k, v.count] }.to_h
-binding.pry
 score_h2 = h2.map { |k, v| [k, [k.length, 5].min * v] }
   .to_h.sort_by { |_, v| v }.reverse
-score_l2 = inverse_hash_2.map { |k, v| [k, v.map { |each_v| l2[each_v] }.sum] }
+score_l2 = inverse_hash_2.map { |k, v| [k, [k.length, 5].min * v.map { |each_v| l2[each_v] }.sum] }
   .to_h.sort_by { |_, v| v }.reverse
 
+logger "Deriving affix lists after filtering low frequency affixes"
+suffix_list = score_h1.to_h.select { |_, v| v > 160 }.keys
+prefix_list = score_h2.to_h.select { |_, v| v > 120 }.keys
+
+# 3.3
+logger "Deriving candidate roots"
+candidate_roots = []
+data = counts.select { |k, v| v > 5 }.keys
+
+binding.pry
+
+puts "Total: #{data.count}"
+x =
+  data.each_with_index.map do |word, index|
+    puts index
+    possible_suffixes = suffix_list.map { |suffix| suffix if word =~ /#{suffix}\z/ }.compact
+    possible_prefixes = prefix_list.map { |prefix| prefix if word =~ /\A"#{prefix}"/ }.compact
+    [word, possible_suffixes, possible_prefixes]
+  end
+
+binding.pry
