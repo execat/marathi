@@ -4,7 +4,7 @@ GEM
     coderay (1.1.1)
     domain_name (0.5.20170223)
       unf (>= 0.0.5, < 1.0.0)
-    fast_trie (0.5.1)
+    ffi (1.9.18-java)
     http-cookie (1.0.3)
       domain_name (~> 0.5)
     method_source (0.8.2)
@@ -15,24 +15,33 @@ GEM
     netrc (0.11.0)
     nokogiri (1.7.1)
       mini_portile2 (~> 2.1.0)
+    nokogiri (1.7.1-java)
     pry (0.10.4)
       coderay (~> 1.1.0)
       method_source (~> 0.8.1)
       slop (~> 3.4)
+    pry (0.10.4-java)
+      coderay (~> 1.1.0)
+      method_source (~> 0.8.1)
+      slop (~> 3.4)
+      spoon (~> 0.0)
     rest-client (2.0.1)
       http-cookie (>= 1.0.2, < 2.0)
       mime-types (>= 1.16, < 4.0)
       netrc (~> 0.8)
     slop (3.6.0)
+    spoon (0.0.6)
+      ffi
     unf (0.1.4)
       unf_ext
+    unf (0.1.4-java)
     unf_ext (0.0.7.2)
 
 PLATFORMS
+  java
   ruby
 
 DEPENDENCIES
-  fast_trie
   nokogiri
   pry
   rest-client
