@@ -1,5 +1,4 @@
 require 'csv'
-require 'trie'
 require_relative 'data/reader'
 
 morfessor_file = "comparison/morfessor/morfessor.txt"
@@ -89,6 +88,10 @@ def inverse_hash(input, options={})
   h
 end
 
+def sum(array)
+  array.inject(0, :+)
+end
+
 # 3.2
 logger "Calculating affix scores"
 inverse_hash_1 = inverse_hash(candidate_suffixes)
@@ -104,7 +107,7 @@ h2 = inverse_hash_2.map { |k, v| [k, v.count] }.to_h
 l2 = candidate_prefixes.to_h.map { |k, v| [k, v.count] }.to_h
 score_h2 = h2.map { |k, v| [k, [k.length, 5].min * v] }
   .to_h.sort_by { |_, v| v }.reverse
-score_l2 = inverse_hash_2.map { |k, v| [k, [k.length, 5].min * v.map { |each_v| l2[each_v] }.sum] }
+score_l2 = inverse_hash_2.map { |k, v| [k, [k.length, 5].min * sum(v.map { |each_v| l2[each_v] })] }
   .to_h.sort_by { |_, v| v }.reverse
 
 logger "Deriving affix lists after filtering low frequency affixes"
