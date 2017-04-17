@@ -111,8 +111,8 @@ score_l2 = inverse_hash_2.map { |k, v| [k, [k.length, 5].min * sum(v.map { |each
   .to_h.sort_by { |_, v| v }.reverse
 
 logger "Deriving affix lists after filtering low frequency affixes"
-suffix_list = score_h1.to_h.select { |_, v| v > 160 }.keys
-prefix_list = score_h2.to_h.select { |_, v| v > 120 }.keys
+suffix_list = score_h1.to_h.select { |_, v| v > 1000 }.keys
+prefix_list = score_h2.to_h.select { |_, v| v > 1000 }.keys
 
 # 3.3
 logger "Deriving candidate roots"
