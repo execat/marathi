@@ -119,15 +119,17 @@ logger "Deriving candidate roots"
 candidate_roots = []
 data = counts.select { |k, v| v > 5 }.keys
 
-binding.pry
-
 puts "Total: #{data.count}"
-x =
+puts "Suffix set: #{suffix_list.count}"
+puts "Prefix set: #{prefix_list.count}"
+segments =
   data.each_with_index.map do |word, index|
-    puts index
-    possible_suffixes = suffix_list.map { |suffix| suffix if word =~ /#{suffix}\z/ }.compact
-    possible_prefixes = prefix_list.map { |prefix| prefix if word =~ /\A"#{prefix}"/ }.compact
+    i = index + 1
+    puts i if i % 1000 == 0
+    possible_suffixes = suffix_list.map { |suffix| suffix if word =~ /\A.+#{suffix}\z/ }.compact
+    possible_prefixes = prefix_list.map { |prefix| prefix if word =~ /\A#{prefix}.+/ }.compact
     [word, possible_suffixes, possible_prefixes]
   end
 
+logger "Pry"
 binding.pry
