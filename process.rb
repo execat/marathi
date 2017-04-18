@@ -99,20 +99,40 @@ h1 = inverse_hash_1.map { |k, v| [k, v.count] }.to_h
 l1 = candidate_suffixes.to_h.map { |k, v| [k, v.count] }.to_h
 score_h1 = h1.map { |k, v| [k, [k.length, 5].min * v] }
   .to_h.sort_by { |_, v| v }.reverse
-score_l1 = inverse_hash_1.map { |k, v| [k, [k.length, 5].min * v.map { |each_v| l1[each_v] }.sum] }
-  .to_h.sort_by { |_, v| v }.reverse
+# Weaker metric
+# score_l1 = inverse_hash_1.map { |k, v| [k, [k.length, 5].min * v.map { |each_v| l1[each_v] }.sum] }
+#   .to_h.sort_by { |_, v| v }.reverse
 
 inverse_hash_2 = inverse_hash(candidate_prefixes, { reverse: true })
 h2 = inverse_hash_2.map { |k, v| [k, v.count] }.to_h
 l2 = candidate_prefixes.to_h.map { |k, v| [k, v.count] }.to_h
 score_h2 = h2.map { |k, v| [k, [k.length, 5].min * v] }
   .to_h.sort_by { |_, v| v }.reverse
-score_l2 = inverse_hash_2.map { |k, v| [k, [k.length, 5].min * sum(v.map { |each_v| l2[each_v] })] }
-  .to_h.sort_by { |_, v| v }.reverse
+# Weaker metric
+# score_l2 = inverse_hash_2.map { |k, v| [k, [k.length, 5].min * sum(v.map { |each_v| l2[each_v] })] }
+#   .to_h.sort_by { |_, v| v }.reverse
 
 logger "Deriving affix lists after filtering low frequency affixes"
-suffix_list = score_h1.to_h.select { |_, v| v > 1000 }.keys
-prefix_list = score_h2.to_h.select { |_, v| v > 1000 }.keys
+
+# THIS
+# suffix_list = score_h1.to_h.select { |_, v| v > 1000 }.keys
+# prefix_list = score_h2.to_h.select { |_, v| v > 1000 }.keys
+
+# OR THIS
+# Score update for 2.2
+# 4
+def condition(k, v, options)
+  c = options[:suffix] ? 1000 : 500
+  m = k.length > 2 ? 1 : 4 - k.length
+  v > m * c
+end
+
+def filter_by_length_dependent_threshold(h, options={})
+  h.select { |k, v| condition(k, v, options) }.to_h
+end
+
+suffix_list = filter_by_length_dependent_threshold(score_h1, suffix: true).keys
+prefix_list = filter_by_length_dependent_threshold(score_h2, prefix: true).keys
 
 # 3.3
 logger "Deriving candidate roots"
